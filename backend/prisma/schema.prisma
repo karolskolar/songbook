@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Song {
+  id               String   @id @default(uuid())
+  title            String
+  artist           String?
+  content          String
+  selectedVoicings String   @default("{}")
+  chordOrder       String   @default("[]")
+  transposition    Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ChordDefinition {
+  id          String   @id @default(uuid())
+  name        String
+  voicingName String?
+  strings     String
+  fingers     String
+  baseFret    Int      @default(1)
+  barreString Int?
+  barreSpan   String?
+  capoFret    Int?
+  capoSpan    String?
+  createdAt   DateTime @default(now())
+
+  @@index([name])
+}
