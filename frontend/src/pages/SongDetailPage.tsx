@@ -50,6 +50,10 @@ export function SongDetailPage() {
     await updateSong({ chordOrder });
   };
 
+  const handleUpdateExtraChords = async (extraChords: string[]) => {
+    await updateSong({ extraChords });
+  };
+
   return (
     <div className="py-4">
       <div className="mb-4">
@@ -70,6 +74,7 @@ export function SongDetailPage() {
         onBatchImportChords={handleBatchImportChords}
         onDeleteChord={handleDeleteChord}
         onUpdateChordOrder={handleUpdateChordOrder}
+        onUpdateExtraChords={handleUpdateExtraChords}
       />
     </div>
   );

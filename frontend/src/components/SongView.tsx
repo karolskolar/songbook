@@ -5,7 +5,7 @@ import { ChordDiagram } from './ChordDiagram';
 import { ChordEditor } from './ChordEditor';
 import { ChordBatchImporter } from './ChordBatchImporter';
 import { TransposeControls } from './TransposeControls';
-import { extractChords } from '../utils/chordParser';
+import { extractChords, getSongChords } from '../utils/chordParser';
 import { transposeChord } from '../utils/transpose';
 
 interface SongViewProps {
@@ -17,17 +17,22 @@ interface SongViewProps {
   onBatchImportChords?: (chords: CreateChordInput[]) => Promise<void>;
   onDeleteChord?: (id: string) => Promise<void>;
   onUpdateChordOrder?: (chordOrder: string[]) => Promise<void>;
+  onUpdateExtraChords?: (extraChords: string[]) => Promise<void>;
 }
 
-export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onBatchImportChords, onDeleteChord, onUpdateChordOrder }: SongViewProps) {
+export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onBatchImportChords, onDeleteChord, onUpdateChordOrder, onUpdateExtraChords }: SongViewProps) {
   const [transposition, setTransposition] = useState(song.transposition);
   const [editingChord, setEditingChord] = useState<string | null>(null);
   const [editingExisting, setEditingExisting] = useState<ChordDefinition | null>(null);
   const [showBatchImporter, setShowBatchImporter] = useState(false);
   const [showAddChord, setShowAddChord] = useState(false);
 
-  const usedChords = extractChords(song.content);
-  const transposedChords = usedChords.map(c => transposeChord(c, transposition));
+  const lyricChords = extractChords(song.content);
+  const extraChords = song.extraChords ?? [];
+  const transposedChords = getSongChords(song).map(c => transposeChord(c, transposition));
+  const transposedExtras = new Set(
+    extraChords.filter(c => !lyricChords.includes(c)).map(c => transposeChord(c, transposition))
+  );
 
   // Sort chords based on saved order, with unordered chords at the end
   const orderedChords = [...transposedChords].sort((a, b) => {
@@ -84,7 +89,17 @@ export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onB
     if (onCreateChord) {
       await onCreateChord(data);
     }
+    // Show the chord in this song even when the lyrics don't use it (stored in the original key)
+    const originalName = transposeChord(data.name, -transposition);
+    if (onUpdateExtraChords && !getSongChords(song).includes(originalName)) {
+      await onUpdateExtraChords([...extraChords, originalName]);
+    }
     setShowAddChord(false);
+  };
+
+  const handleRemoveExtraChord = async (chordName: string) => {
+    if (!onUpdateExtraChords || !confirm(`Remove chord "${chordName}" from this song?`)) return;
+    await onUpdateExtraChords(extraChords.filter(c => transposeChord(c, transposition) !== chordName));
   };
 
   const handleMoveChord = async (chordName: string, direction: 'up' | 'down') => {
@@ -176,6 +191,7 @@ export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onB
         <div className="flex flex-wrap gap-4">
           {orderedChords.length > 0 && orderedChords.map((chordName, index) => {
             const selectedChord = getSelectedChord(chordName);
+            const isExtra = transposedExtras.has(chordName);
 
             return (
               <div key={chordName} className="bg-white p-2 rounded border shadow-sm relative group">
@@ -211,7 +227,15 @@ export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onB
                         >
                           ✎
                         </button>
-                        {onDeleteChord && (
+                        {isExtra && onUpdateExtraChords ? (
+                          <button
+                            onClick={() => handleRemoveExtraChord(chordName)}
+                            className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded text-xs hover:bg-red-600"
+                            title="Remove from song"
+                          >
+                            ×
+                          </button>
+                        ) : onDeleteChord && (
                           <button
                             onClick={() => handleDeleteChord(selectedChord)}
                             className="w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded text-xs hover:bg-red-600"
@@ -224,13 +248,24 @@ export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onB
                     )}
                   </>
                 ) : (
-                  <button
-                    onClick={() => handleDefineChord(chordName)}
-                    className="w-[80px] h-[100px] flex flex-col items-center justify-center bg-slate-100 rounded border-2 border-dashed border-slate-300 text-sm text-slate-500 hover:border-amber-400 hover:bg-amber-50 transition-colors"
-                  >
-                    <span className="font-bold">{chordName}</span>
-                    <span className="text-xs text-amber-600 mt-1">+ Define</span>
-                  </button>
+                  <>
+                    <button
+                      onClick={() => handleDefineChord(chordName)}
+                      className="w-[80px] h-[100px] flex flex-col items-center justify-center bg-slate-100 rounded border-2 border-dashed border-slate-300 text-sm text-slate-500 hover:border-amber-400 hover:bg-amber-50 transition-colors"
+                    >
+                      <span className="font-bold">{chordName}</span>
+                      <span className="text-xs text-amber-600 mt-1">+ Define</span>
+                    </button>
+                    {isExtra && onUpdateExtraChords && (
+                      <button
+                        onClick={() => handleRemoveExtraChord(chordName)}
+                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                        title="Remove from song"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </>
                 )}
               </div>
             );

@@ -81,6 +81,13 @@ export function extractChords(content: string): string[] {
   return Array.from(chords).sort();
 }
 
+// Chords used in the lyrics plus chords added to the song manually
+export function getSongChords(song: { content: string; extraChords?: string[] }): string[] {
+  const used = extractChords(song.content);
+  const extras = (song.extraChords ?? []).filter(c => !used.includes(c));
+  return [...used, ...extras];
+}
+
 export function isSectionLine(line: ParsedLine): boolean {
   return (
     line.tokens.length === 1 &&

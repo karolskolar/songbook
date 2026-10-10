@@ -14,6 +14,7 @@ model Song {
   content          String
   selectedVoicings String   @default("{}")
   chordOrder       String   @default("[]")
+  extraChords      String   @default("[]")
   transposition    Int      @default(0)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt

@@ -5,6 +5,7 @@ export interface Song {
   content: string;
   selectedVoicings: Record<string, string>;
   chordOrder: string[];
+  extraChords: string[];
   transposition: number;
   createdAt: string;
   updatedAt: string;
@@ -33,7 +34,10 @@ export interface ParsedLine {
   tokens: ParsedToken[];
 }
 
-export type CreateSongInput = Omit<Song, 'id' | 'createdAt' | 'updatedAt'>;
+export type CreateSongInput = Omit<Song, 'id' | 'createdAt' | 'updatedAt' | 'chordOrder' | 'extraChords'> & {
+  chordOrder?: string[];
+  extraChords?: string[];
+};
 export type UpdateSongInput = Partial<CreateSongInput>;
 
 export type CreateChordInput = Omit<ChordDefinition, 'id' | 'createdAt'>;

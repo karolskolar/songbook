@@ -1,7 +1,7 @@
 import { Document, Page, Text, View, StyleSheet, pdf, Svg, Line, Rect, Circle, G, Font } from '@react-pdf/renderer';
 import { createElement } from 'react';
 import type { Song, ChordDefinition } from '../types';
-import { parseContent, isSectionLine, isLabelLine, extractChords } from './chordParser';
+import { parseContent, isSectionLine, isLabelLine, getSongChords } from './chordParser';
 import { transposeChord } from './transpose';
 
 // Register Roboto font which supports Czech/Latin Extended characters
@@ -290,7 +290,7 @@ interface PdfOptions {
 
 function SongDocument({ song, chords, transposition = 0 }: PdfOptions) {
   const lines = parseContent(song.content);
-  const usedChordNames = extractChords(song.content).map(c => transposeChord(c, transposition));
+  const usedChordNames = getSongChords(song).map(c => transposeChord(c, transposition));
 
   // Get unique chord definitions for used chords, respecting selected voicings
   const usedChordDefs = usedChordNames

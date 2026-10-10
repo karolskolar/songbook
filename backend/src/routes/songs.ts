@@ -12,6 +12,7 @@ router.get('/', async (req, res) => {
       ...song,
       selectedVoicings: JSON.parse(song.selectedVoicings),
       chordOrder: JSON.parse(song.chordOrder),
+      extraChords: JSON.parse(song.extraChords),
     }));
     res.json(formatted);
   } catch (error) {
@@ -32,6 +33,7 @@ router.get('/:id', async (req, res) => {
       ...song,
       selectedVoicings: JSON.parse(song.selectedVoicings),
       chordOrder: JSON.parse(song.chordOrder),
+      extraChords: JSON.parse(song.extraChords),
     });
   } catch (error) {
     console.error('Error fetching song:', error);
@@ -41,7 +43,7 @@ router.get('/:id', async (req, res) => {
 
 router.post('/', async (req, res) => {
   try {
-    const { title, artist, content, selectedVoicings, chordOrder, transposition } = req.body;
+    const { title, artist, content, selectedVoicings, chordOrder, extraChords, transposition } = req.body;
     const song = await prisma.song.create({
       data: {
         title,
@@ -49,6 +51,7 @@ router.post('/', async (req, res) => {
         content,
         selectedVoicings: JSON.stringify(selectedVoicings || {}),
         chordOrder: JSON.stringify(chordOrder || []),
+        extraChords: JSON.stringify(extraChords || []),
         transposition: transposition || 0,
       },
     });
@@ -56,6 +59,7 @@ router.post('/', async (req, res) => {
       ...song,
       selectedVoicings: JSON.parse(song.selectedVoicings),
       chordOrder: JSON.parse(song.chordOrder),
+      extraChords: JSON.parse(song.extraChords),
     });
   } catch (error) {
     console.error('Error creating song:', error);
@@ -65,7 +69,7 @@ router.post('/', async (req, res) => {
 
 router.put('/:id', async (req, res) => {
   try {
-    const { title, artist, content, selectedVoicings, chordOrder, transposition } = req.body;
+    const { title, artist, content, selectedVoicings, chordOrder, extraChords, transposition } = req.body;
     const updateData: Record<string, unknown> = {};
 
     if (title !== undefined) updateData.title = title;
@@ -73,6 +77,7 @@ router.put('/:id', async (req, res) => {
     if (content !== undefined) updateData.content = content;
     if (selectedVoicings !== undefined) updateData.selectedVoicings = JSON.stringify(selectedVoicings);
     if (chordOrder !== undefined) updateData.chordOrder = JSON.stringify(chordOrder);
+    if (extraChords !== undefined) updateData.extraChords = JSON.stringify(extraChords);
     if (transposition !== undefined) updateData.transposition = transposition;
 
     const song = await prisma.song.update({
@@ -83,6 +88,7 @@ router.put('/:id', async (req, res) => {
       ...song,
       selectedVoicings: JSON.parse(song.selectedVoicings),
       chordOrder: JSON.parse(song.chordOrder),
+      extraChords: JSON.parse(song.extraChords),
     });
   } catch (error) {
     console.error('Error updating song:', error);
