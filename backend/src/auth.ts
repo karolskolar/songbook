@@ -7,7 +7,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const USERNAME = process.env.APP_USERNAME;
 const PASSWORD = process.env.APP_PASSWORD;
-const SECRET = process.env.SESSION_SECRET || (isProduction ? undefined : 'dev-only-insecure-secret');
+const SECRET = process.env.SESSION_SECRET;
 
 export function assertAuthConfigured() {
   const missing = [

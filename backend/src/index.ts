@@ -10,8 +10,9 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3010;
 const HOST = process.env.HOST || '0.0.0.0';
 
-// Behind a reverse proxy (Nginx Proxy Manager): trust X-Forwarded-* for client IP and HTTPS
-app.set('trust proxy', 1);
+// Trust X-Forwarded-* (client IP, HTTPS) only from the reverse proxy (Nginx Proxy Manager),
+// so direct clients can't spoof their IP to get around the login rate limit
+app.set('trust proxy', process.env.TRUST_PROXY || 'loopback');
 app.use(express.json());
 
 app.get('/api/health', (req, res) => {

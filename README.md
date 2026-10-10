@@ -124,7 +124,8 @@ songbook/
 The app has a single login, configured with environment variables on the backend:
 
 - `APP_USERNAME`, `APP_PASSWORD`: the login credentials. The server refuses to start without them.
-- `SESSION_SECRET`: signs the session cookie. Required in production; generate one with `openssl rand -hex 32`.
+- `SESSION_SECRET`: signs the session cookie. Required (the server refuses to start without it); generate one with `openssl rand -hex 32`.
+- `TRUST_PROXY`: the reverse proxy IP(s) whose `X-Forwarded-For` header is trusted for the client IP (default: loopback). In production this is the Nginx Proxy Manager IP, `192.168.100.103`.
 
 After logging in, the session lasts 30 days in an HttpOnly cookie. After 10 failed login attempts from one IP, logins from it are blocked for 15 minutes.
 
