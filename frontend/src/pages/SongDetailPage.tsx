@@ -9,7 +9,7 @@ export function SongDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { song, loading, error, updateSong } = useSong(id);
-  const { chords, createChord, deleteChord, batchCreateChords } = useChords();
+  const { chords, createChord, updateChord, deleteChord, batchCreateChords } = useChords();
 
   if (loading) {
     return (
@@ -36,6 +36,10 @@ export function SongDetailPage() {
 
   const handleCreateChord = async (data: CreateChordInput) => {
     await createChord(data);
+  };
+
+  const handleUpdateChord = async (chordId: string, data: CreateChordInput) => {
+    await updateChord(chordId, data);
   };
 
   const handleDeleteChord = async (chordId: string) => {
@@ -71,6 +75,7 @@ export function SongDetailPage() {
         onEdit={() => navigate(`/songs/${id}/edit`)}
         onExportPdf={handleExportPdf}
         onCreateChord={handleCreateChord}
+        onUpdateChord={handleUpdateChord}
         onBatchImportChords={handleBatchImportChords}
         onDeleteChord={handleDeleteChord}
         onUpdateChordOrder={handleUpdateChordOrder}

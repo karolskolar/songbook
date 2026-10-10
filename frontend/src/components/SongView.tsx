@@ -14,13 +14,14 @@ interface SongViewProps {
   onEdit?: () => void;
   onExportPdf?: () => void;
   onCreateChord?: (chord: CreateChordInput) => Promise<void>;
+  onUpdateChord?: (id: string, chord: CreateChordInput) => Promise<void>;
   onBatchImportChords?: (chords: CreateChordInput[]) => Promise<void>;
   onDeleteChord?: (id: string) => Promise<void>;
   onUpdateChordOrder?: (chordOrder: string[]) => Promise<void>;
   onUpdateExtraChords?: (extraChords: string[]) => Promise<void>;
 }
 
-export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onBatchImportChords, onDeleteChord, onUpdateChordOrder, onUpdateExtraChords }: SongViewProps) {
+export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onUpdateChord, onBatchImportChords, onDeleteChord, onUpdateChordOrder, onUpdateExtraChords }: SongViewProps) {
   const [transposition, setTransposition] = useState(song.transposition);
   const [editingChord, setEditingChord] = useState<string | null>(null);
   const [editingExisting, setEditingExisting] = useState<ChordDefinition | null>(null);
@@ -66,7 +67,15 @@ export function SongView({ song, chords, onEdit, onExportPdf, onCreateChord, onB
   };
 
   const handleSaveChord = async (data: CreateChordInput) => {
-    if (onCreateChord) {
+    if (editingExisting && onUpdateChord) {
+      await onUpdateChord(editingExisting.id, data);
+      // Keep a renamed extra chord in this song's list
+      const oldName = transposeChord(editingExisting.name, -transposition);
+      const newName = transposeChord(data.name, -transposition);
+      if (onUpdateExtraChords && oldName !== newName && extraChords.includes(oldName)) {
+        await onUpdateExtraChords(extraChords.map(c => (c === oldName ? newName : c)));
+      }
+    } else if (onCreateChord) {
       await onCreateChord(data);
     }
     setEditingChord(null);

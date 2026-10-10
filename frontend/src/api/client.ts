@@ -63,7 +63,8 @@ export const chordsApi = {
   update: (id: string, data: UpdateChordInput) =>
     fetchApi<ChordDefinition>(`/chords/${id}`, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      // Send cleared fields (e.g. removed capo or barre) as null so the server clears them
+      body: JSON.stringify(data, (_key, value) => (value === undefined ? null : value)),
     }),
 
   delete: (id: string) =>
