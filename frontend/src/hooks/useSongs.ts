@@ -21,6 +21,7 @@ export function useSongs() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
     fetchSongs();
   }, [fetchSongs]);
 
@@ -59,15 +60,17 @@ export function useSong(id: string | undefined) {
 
   useEffect(() => {
     if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
       setLoading(false);
       return;
     }
+    const songId = id;
 
     async function fetchSong() {
       try {
         setLoading(true);
         setError(null);
-        const data = await songsApi.getById(id);
+        const data = await songsApi.getById(songId);
         setSong(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch song');

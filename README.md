@@ -34,6 +34,7 @@ cd songbook
 # Install backend dependencies
 cd backend
 npm install
+cp .env.example .env   # then set DATABASE_URL, APP_USERNAME, APP_PASSWORD
 npx prisma db push
 npx prisma generate
 
@@ -50,12 +51,12 @@ In two separate terminals:
 # Terminal 1: Start backend
 cd backend
 npm run dev
-# Runs on http://localhost:3001
+# Runs on http://localhost:3010
 
 # Terminal 2: Start frontend
 cd frontend
 npm run dev
-# Runs on http://localhost:5173 (or next available port)
+# Runs on http://localhost:5180 (proxies /api to the backend)
 ```
 
 ### Usage
@@ -117,3 +118,45 @@ songbook/
 - `POST /api/chords` - Create a chord
 - `PUT /api/chords/:id` - Update a chord
 - `DELETE /api/chords/:id` - Delete a chord
+
+## Authentication
+
+The app has a single login, configured with environment variables on the backend:
+
+- `APP_USERNAME`, `APP_PASSWORD`: the login credentials. The server refuses to start without them.
+- `SESSION_SECRET`: signs the session cookie. Required in production; generate one with `openssl rand -hex 32`.
+
+After logging in, the session lasts 30 days in an HttpOnly cookie. After 10 failed login attempts from one IP, logins from it are blocked for 15 minutes.
+
+## Deployment
+
+In production the backend runs as one Node process: it serves both the API and the built frontend (`NODE_ENV=production`).
+
+**Production setup**
+
+| What | Where |
+|---|---|
+| Host | LXC on Proxmox (`lisa`), Debian, Node 22 LTS |
+| Code | `/opt/songbook` |
+| Database | `/var/lib/songbook/songbook.db` |
+| Config | `/etc/songbook.env` (mode 600; same variables as `backend/.env.example`, plus `NODE_ENV=production`) |
+| Service | systemd unit `songbook` (`deploy/songbook.service`) |
+| Public URL | `https://songbook.skolar.sk`, served via Nginx Proxy Manager (Let's Encrypt) → `http://<lxc-ip>:3010` |
+
+**Deploying a new version**
+
+```bash
+deploy/deploy.sh
+```
+
+The script syncs the code, runs `npm ci`, `prisma generate`, `prisma db push` and both builds, then restarts the service. It connects to the SSH alias `songbook`, which must exist in `~/.ssh/config`:
+
+```
+Host songbook
+	HostName 192.168.100.110
+	User root
+	ProxyJump lisa-root
+	IdentityFile ~/.ssh/id_rsa_4096
+```
+
+Set `DEPLOY_HOST` to deploy to a different target.

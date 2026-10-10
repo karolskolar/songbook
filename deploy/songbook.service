@@ -1,0 +1,23 @@
+[Unit]
+Description=Songbook web app
+After=network.target
+
+[Service]
+Type=simple
+User=songbook
+Group=songbook
+WorkingDirectory=/opt/songbook/backend
+EnvironmentFile=/etc/songbook.env
+ExecStart=/usr/bin/node dist/src/index.js
+Restart=always
+RestartSec=5
+
+# Hardening: app only needs to write to its database directory
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/var/lib/songbook
+
+[Install]
+WantedBy=multi-user.target

@@ -2,6 +2,8 @@ import type { Song, ChordDefinition, CreateSongInput, UpdateSongInput, CreateCho
 
 const API_BASE = '/api';
 
+export const UNAUTHORIZED_EVENT = 'songbook:unauthorized';
+
 async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE}${endpoint}`, {
     ...options,
@@ -10,6 +12,10 @@ async function fetchApi<T>(endpoint: string, options?: RequestInit): Promise<T> 
       ...options?.headers,
     },
   });
+
+  if (response.status === 401 && !endpoint.startsWith('/auth/')) {
+    window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+  }
 
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'Request failed' }));
@@ -76,5 +82,20 @@ export const chordsApi = {
     fetchApi<ChordDefinition[]>('/chords/batch', {
       method: 'POST',
       body: JSON.stringify({ chords }),
+    }),
+};
+
+export const authApi = {
+  me: () => fetchApi<{ username: string }>('/auth/me'),
+
+  login: (username: string, password: string) =>
+    fetchApi<{ username: string }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    }),
+
+  logout: () =>
+    fetchApi<void>('/auth/logout', {
+      method: 'POST',
     }),
 };

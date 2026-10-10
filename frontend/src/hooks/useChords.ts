@@ -21,6 +21,7 @@ export function useChords() {
   }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
     fetchChords();
   }, [fetchChords]);
 
@@ -66,15 +67,17 @@ export function useChord(id: string | undefined) {
 
   useEffect(() => {
     if (!id) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount
       setLoading(false);
       return;
     }
+    const chordId = id;
 
     async function fetchChord() {
       try {
         setLoading(true);
         setError(null);
-        const data = await chordsApi.getById(id);
+        const data = await chordsApi.getById(chordId);
         setChord(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to fetch chord');

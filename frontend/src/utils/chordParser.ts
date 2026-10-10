@@ -2,7 +2,7 @@ import type { ParsedToken, ParsedLine } from '../types';
 
 // Supports: A-G and H (European B), with optional sharp/flat,
 // followed by any combination of chord modifiers (m, maj, min, dim, aug, sus, add, M, numbers, /, etc.)
-const CHORD_PATTERN = /^[A-Ha-h][#b]?[a-zA-Z0-9\/]*$/;
+const CHORD_PATTERN = /^[A-Ha-h][#b]?[a-zA-Z0-9/]*$/;
 
 export function isChord(text: string): boolean {
   // Must start with a valid note letter (A-H) and not be a common section word

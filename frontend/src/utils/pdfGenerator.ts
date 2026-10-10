@@ -1,5 +1,7 @@
-import { Document, Page, Text, View, StyleSheet, pdf, Svg, Line, Rect, Circle, G, Font } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, pdf, Svg, Line, Rect, Circle, Font } from '@react-pdf/renderer';
 import { createElement } from 'react';
+import type { ReactElement } from 'react';
+import type { DocumentProps } from '@react-pdf/renderer';
 import type { Song, ChordDefinition } from '../types';
 import { parseContent, isSectionLine, isLabelLine, getSongChords } from './chordParser';
 import { transposeChord } from './transpose';
@@ -396,7 +398,7 @@ function SongDocument({ song, chords, transposition = 0 }: PdfOptions) {
 }
 
 export async function generateSongPdf(options: PdfOptions): Promise<Blob> {
-  const doc = createElement(SongDocument, options);
+  const doc = createElement(SongDocument, options) as unknown as ReactElement<DocumentProps>;
   return await pdf(doc).toBlob();
 }
 
