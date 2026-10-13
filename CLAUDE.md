@@ -33,4 +33,9 @@ No migrations: schema changes go through `prisma db push` (deploy.sh runs it). N
 - **`deploy.sh` rsyncs the working tree, not a commit**, so uncommitted changes go to production too. Commit before deploying.
 - Production: LXC `192.168.100.110` (SSH alias `songbook`), config in `/etc/songbook.env`, DB `/var/lib/songbook/songbook.db`. Nginx Proxy Manager is `192.168.100.103`.
 - Auth: `SESSION_SECRET` is always required (no fallback). `TRUST_PROXY` lists the proxies whose `X-Forwarded-For` is trusted (default loopback; production = NPM IP). If NPM's IP changes, update `TRUST_PROXY`, or the login rate limit will treat every client as the proxy's one IP.
+- Backend `tsc` emits to `dist/src/index.js` (not `dist/index.js`) because `generated/` is also compiled; `npm start` and the systemd unit use that path.
+- On the server `NODE_ENV=production` makes `npm ci` skip devDependencies (tsc, vite, @types), so `deploy.sh` uses `npm ci --include=dev`. Keep it.
+- Remaining backend `npm audit` findings (`deepmerge-ts`, `mysql2`) come from the `prisma` CLI's tooling and don't affect the SQLite runtime. Never run `npm audit fix --force`: it downgrades to Prisma 6.
+- The `eslint-disable-next-line react-hooks/set-state-in-effect` lines in `hooks/useSongs.ts` / `useChords.ts` are intentional (fetch-on-mount pattern).
+- NPM proxy host "Domain Names" only accepts a value after you press Enter to make a chip. A host saved as bare `songbook` instead of `songbook.skolar.sk` returned 404 and its Let's Encrypt request failed with "Internal Error".
 - The server has no `tcpdump`; use `ss -tn state all` to see proxy peers. macOS has no `timeout` command.
